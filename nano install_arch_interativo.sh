@@ -7,7 +7,7 @@ echo "🚀 Instalador Arch Linux Interativo com XFCE, ZRAM, Swap e Autologin"
 # --- Perguntas interativas ---
 read -rp "Nome do usuário: " USUARIO
 read -rp "Nome do host: " HOSTNAME
-read -rp "Tamanho da swapfile (ex: 1G, 512M): " SWAPSIZE
+SWAPSIZE="768M"  # 25% da RAM de 2.9Gi
 
 # --- Escolher disco ---
 echo "\n💽 Discos disponíveis:"
@@ -120,7 +120,7 @@ echo "/swapfile none swap defaults 0 0" >> /etc/fstab
 # ZRAM
 cat > /etc/systemd/zram-generator.conf <<ZZZ
 [zram0]
-zram-size = ram / 2
+zram-size = ram
 compression-algorithm = zstd
 ZZZ
 
@@ -166,6 +166,21 @@ NVIMPLUG
 
 sudo -u $USUARIO git clone --depth 1 https://github.com/wbthomason/packer.nvim \
     /home/$USUARIO/.local/share/nvim/site/pack/packer/start/packer.nvim
+
+# Ajuste de performance e personalizações adicionais
+
+# Ajustar vm.swappiness para 10 (menos uso de swap)
+echo 'vm.swappiness=10' >> /etc/sysctl.d/99-swappiness.conf
+
+# Instalar htop para monitoramento de RAM/swap/zram
+pacman -Sy --noconfirm htop
+
+# Alias no bashrc para monitoramento rápido
+echo "alias ram='free -h'" >> /home/$USUARIO/.bashrc
+echo "alias zram='cat /proc/swaps'" >> /home/$USUARIO/.bashrc
+
+echo "
+✅ Ajustes de performance aplicados."
 
 # Temas e aparência estilo Kali Linux
 pacman -Sy --noconfirm lxappearance
